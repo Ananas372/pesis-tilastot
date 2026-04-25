@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naisten Superpesis 2025 — Tilastot</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2eb;
+  --surface: #fff;
+  --text: #1a1a1a;
+  --muted: #6b6b6b;
+  --border: #e0ddd5;
+  --accent: #2d5a27;
+  --accent2: #c84b1f;
+  --mono: 'DM Mono', monospace;
+  --serif: 'Fraunces', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
+
+header { border-bottom: 1px solid var(--border); padding: 2rem 2.5rem 1.5rem; background: var(--surface); }
+header h1 { font-family: var(--serif); font-size: 2.2rem; font-weight: 300; letter-spacing: -0.02em; color: var(--accent); }
+header p { color: var(--muted); margin-top: 0.25rem; font-size: 12px; }
+
+nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 2.5rem; }
+nav button { padding: 0.85rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+nav button.active { color: var(--text); border-bottom-color: var(--accent); }
+nav button:hover { color: var(--text); }
+
+main { max-width: 1200px; margin: 0 auto; padding: 2rem 2.5rem; }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); padding: 1rem 1.25rem; }
+.metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+.metric-value { font-family: var(--serif); font-size: 1.8rem; font-weight: 300; color: var(--accent); }
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 0.2rem; }
+
+.controls { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+.controls input, .controls select { height: 34px; padding: 0 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; }
+.controls input:focus, .controls select:focus { border-color: var(--accent); }
+.controls input { width: 180px; }
+
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); }
+th { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; white-space: nowrap; background: #faf9f5; }
+th:hover { color: var(--text); }
+th.sort-asc::after { content: " ↑"; color: var(--accent); }
+th.sort-desc::after { content: " ↓"; color: var(--accent); }
+td { padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9f8f4; }
+.rank { color: var(--muted); width: 32px; }
+.player-name { font-weight: 500; }
+.team-tag { display: inline-block; padding: 2px 7px; font-size: 10px; background: #eef3ed; color: var(--accent); letter-spacing: 0.04em; }
+.pct-high { color: var(--accent); font-weight: 500; }
+.pct-low { color: var(--accent2); }
+.bar-cell { width: 80px; }
+.bar-wrap { width: 70px; height: 5px; background: var(--border); display: inline-block; vertical-align: middle; }
+.bar-fill { height: 100%; background: var(--accent); }
+.pagination { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; font-size: 12px; color: var(--muted); }
+.pagination button { height: 30px; padding: 0 12px; border: 1px solid var(--border); background: var(--surface); font-family: var(--mono); font-size: 12px; cursor: pointer; }
+.pagination button:hover:not(:disabled) { background: var(--bg); }
+.pagination button:disabled { opacity: 0.35; cursor: default; }
+
+/* Simulator */
+.sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width: 700px) { .sim-grid { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--border); padding: 1.5rem; }
+.panel-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+.pesa-row { display: grid; grid-template-columns: 120px 1fr 50px; gap: 8px; align-items: center; margin-bottom: 10px; }
+.pesa-label { font-size: 11px; color: var(--muted); }
+.pesa-row select { height: 32px; padding: 0 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 11px; width: 100%; outline: none; }
+.pesa-pct { font-size: 12px; font-weight: 500; text-align: right; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.slider-label { font-size: 11px; color: var(--muted); min-width: 130px; }
+.slider-val { font-size: 11px; font-weight: 500; min-width: 36px; text-align: right; }
+input[type=range] { flex: 1; accent-color: var(--accent); }
+.result-box { border: 1px solid var(--border); padding: 1.25rem; margin-top: 1rem; background: var(--bg); }
+.result-prob { font-family: var(--serif); font-size: 3rem; font-weight: 300; color: var(--accent); }
+.result-label { font-size: 11px; color: var(--muted); margin-top: 0.25rem; }
+.result-formula { font-size: 11px; color: var(--muted); margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.75rem; line-height: 1.7; }
+.chain { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 1rem 0; }
+.chain-node { padding: 5px 9px; font-size: 11px; border: 1px solid; }
+.chain-node.ok { border-color: #a3c49b; background: #eef4ec; color: var(--accent); }
+.chain-node.fail { border-color: #e8a998; background: #fdf0ed; color: var(--accent2); }
+.chain-arrow { color: var(--muted); font-size: 14px; }
+.sim-btn { width: 100%; height: 38px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-family: var(--mono); font-size: 12px; cursor: pointer; letter-spacing: 0.05em; margin-top: 1rem; }
+.sim-btn:hover { background: #234a1e; }
+.sim-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.sim-metric { background: var(--bg); padding: 0.85rem 1rem; border: 1px solid var(--border); }
+.sim-metric-val { font-family: var(--serif); font-size: 1.6rem; font-weight: 300; color: var(--accent); }
+.sim-metric-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 0.2rem; }
+.hidden { display: none; }
+.note { font-size: 11px; color: var(--muted); margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Naisten Superpesis 2025</h1>
+  <p>Kärkilyöntitilastot — Pesävaleittain</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('tilastot', this)">Tilastot</button>
+  <button onclick="showTab('simulaattori', this)">Juoksusimulaattori</button>
+</nav>
+
+<main>
+
+<!-- TILASTOT -->
+<div id="tilastot">
+  <div class="metrics" id="metrics"></div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Hae pelaajaa..." oninput="render()">
+    <select id="teamFilter" onchange="render()"><option value="">Kaikki joukkueet</option></select>
+    <select id="minTries" onchange="render()">
+      <option value="0">Kaikki</option>
+      <option value="50" selected>Min. 50 yritystä</option>
+      <option value="100">Min. 100 yritystä</option>
+      <option value="150">Min. 150 yritystä</option>
+    </select>
+  </div>
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th class="rank">#</th>
+          <th onclick="sortBy('name')">Pelaaja</th>
+          <th onclick="sortBy('team')">Joukkue</th>
+          <th onclick="sortBy('matches')">Ott.</th>
+          <th onclick="sortBy('total_tries')">Yrit.</th>
+          <th onclick="sortBy('total_ok')">Onn.</th>
+          <th onclick="sortBy('total_pct')" id="th-total_pct" class="sort-desc">Yht.%</th>
+          <th onclick="sortBy('pct_0')" id="th-pct_0">P0%</th>
+          <th onclick="sortBy('pct_1')" id="th-pct_1">P1%</th>
+          <th onclick="sortBy('pct_2')" id="th-pct_2">P2%</th>
+          <th onclick="sortBy('pct_3')" id="th-pct_3">P3%</th>
+          <th class="bar-cell"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <button id="prevBtn" onclick="changePage(-1)">← Edell.</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn" onclick="changePage(1)">Seur. →</button>
+  </div>
+</div>
+
+<!-- SIMULAATTORI -->
+<div id="simulaattori" class="hidden">
+  <div class="sim-grid">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Valitse pelaajat pesille</div>
+        <div id="pesa-slots"></div>
+      </div>
+      <div class="panel" style="margin-top:1rem">
+        <div class="panel-title">Säätökertoimet</div>
+        <div class="slider-row">
+          <span class="slider-label">Vastustajan vahvuus</span>
+          <input type="range" id="opp" min="0.70" max="1.30" step="0.05" value="1.00" oninput="updateSlider('opp');calc()">
+          <span class="slider-val" id="opp-v">1.00×</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Pelaajien nopeus</span>
+          <input type="range" id="speed" min="0.80" max="1.20" step="0.05" value="1.00" oninput="updateSlider('speed');calc()">
+          <span class="slider-val" id="speed-v">1.00×</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Painetilanne</span>
+          <input type="range" id="pressure" min="0.85" max="1.15" step="0.05" value="1.00" oninput="updateSlider('pressure');calc()">
+          <span class="slider-val" id="pressure-v">1.00×</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Väsymys</span>
+          <input type="range" id="fatigue" min="0.85" max="1.00" step="0.05" value="1.00" oninput="updateSlider('fatigue');calc()">
+          <span class="slider-val" id="fatigue-v">1.00×</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-title">Juoksun todennäköisyys</div>
+        <div id="calc-result"><p class="note">Valitse pelaajat kaikille pesille.</p></div>
+      </div>
+      <div class="panel" style="margin-top:1rem">
+        <div class="panel-title">Monte Carlo -simulaatio</div>
+        <button class="sim-btn" onclick="runSim()">Simuloi 10 000 yritystä</button>
+        <div id="sim-out" style="margin-top:1rem"><p class="note">Paina nappia ajaaksesi simulaation.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DATA = [{"name":"Virpi Hukka","team":"Manse","team_full":"Manse PP, Tampere","matches":24,"pct_0":41.7,"pct_1":68.8,"pct_2":84.3,"pct_3":80.8,"total_tries":185,"total_ok":140,"total_pct":75.7},{"name":"Saaga-Angelia Raudasoja","team":"Manse","team_full":"Manse PP, Tampere","matches":24,"pct_0":69.2,"pct_1":70.3,"pct_2":84.6,"pct_3":0.0,"total_tries":181,"total_ok":128,"total_pct":70.7},{"name":"Viivi Partanen","team":"Kirittäret","team_full":"Jyväskylän Kirittäret","matches":24,"pct_0":75.5,"pct_1":80.0,"pct_2":60.0,"pct_3":50.0,"total_tries":171,"total_ok":127,"total_pct":74.3},{"name":"Aino-Kaisa Mantere","team":"Jussittaret","team_full":"Jussittaret, Seinäjoki","matches":24,"pct_0":50.0,"pct_1":0.0,"pct_2":68.3,"pct_3":56.6,"total_tries":217,"total_ok":124,"total_pct":57.1},{"name":"Maiju Mäntylä","team":"Jussittaret","team_full":"Jussittaret, Seinäjoki","matches":24,"pct_0":48.5,"pct_1":69.2,"pct_2":77.1,"pct_3":100.0,"total_tries":170,"total_ok":121,"total_pct":71.2},{"name":"Miia Puolakka","team":"Fera","team_full":"Fera, Rauma","matches":24,"pct_0":69.8,"pct_1":69.2,"pct_2":46.2,"pct_3":100.0,"total_tries":171,"total_ok":118,"total_pct":69.0},{"name":"Jenni Matola","team":"Jussittaret","team_full":"Jussittaret, Seinäjoki","matches":23,"pct_0":74.2,"pct_1":77.8,"pct_2":28.6,"pct_3":20.0,"total_tries":153,"total_ok":108,"total_pct":70.6},{"name":"Aino Tanhua","team":"Fera","team_full":"Fera, Rauma","matches":24,"pct_0":65.9,"pct_1":70.1,"pct_2":83.3,"pct_3":100.0,"total_tries":151,"total_ok":106,"total_pct":70.2},{"name":"Noora Pasi","team":"JoMa","team_full":"Joensuun Maila","matches":24,"pct_0":66.7,"pct_1":63.2,"pct_2":50.0,"pct_3":16.7,"total_tries":171,"total_ok":106,"total_pct":62.0},{"name":"Erica Rosendahl","team":"Roihuttaret","team_full":"Roihuttaret, Helsinki","matches":24,"pct_0":29.4,"pct_1":43.3,"pct_2":79.4,"pct_3":59.4,"total_tries":174,"total_ok":106,"total_pct":60.9},{"name":"Kaisa Peräaho","team":"Virkiä","team_full":"Lapuan Virkiä","matches":23,"pct_0":37.1,"pct_1":67.3,"pct_2":100.0,"pct_3":70.0,"total_tries":166,"total_ok":105,"total_pct":63.3},{"name":"Petra Kerola","team":"Virkiä","team_full":"Lapuan Virkiä","matches":24,"pct_0":67.9,"pct_1":75.0,"pct_2":50.0,"pct_3":75.0,"total_tries":154,"total_ok":104,"total_pct":67.5},{"name":"Erika Väliheikki","team":"Roihuttaret","team_full":"Roihuttaret, Helsinki","matches":24,"pct_0":48.7,"pct_1":61.9,"pct_2":100.0,"pct_3":38.5,"total_tries":177,"total_ok":104,"total_pct":58.8},{"name":"Lotta Nummikari","team":"Pesäkarhut","team_full":"Pesäkarhut, Pori","matches":24,"pct_0":66.7,"pct_1":60.0,"pct_2":57.9,"pct_3":50.5,"total_tries":189,"total_ok":102,"total_pct":54.0},{"name":"Annika Linna","team":"Pesäkarhut","team_full":"Pesäkarhut, Pori","matches":24,"pct_0":45.9,"pct_1":78.3,"pct_2":79.2,"pct_3":84.6,"total_tries":143,"total_ok":101,"total_pct":70.6},{"name":"Emilia Linna","team":"Pesäkarhut","team_full":"Pesäkarhut, Pori","matches":23,"pct_0":52.6,"pct_1":35.1,"pct_2":82.0,"pct_3":76.5,"total_tries":151,"total_ok":99,"total_pct":65.6},{"name":"Venla Karttunen","team":"Kirittäret","team_full":"Jyväskylän Kirittäret","matches":23,"pct_0":22.2,"pct_1":52.5,"pct_2":77.3,"pct_3":41.7,"total_tries":166,"total_ok":99,"total_pct":59.6},{"name":"Nelli Huotari","team":"JoMa","team_full":"Joensuun Maila","matches":24,"pct_0":40.0,"pct_1":40.0,"pct_2":83.9,"pct_3":48.3,"total_tries":162,"total_ok":97,"total_pct":59.9},{"name":"Jessika Sihvonen","team":"Jyske","team_full":"Laitilan Jyske","matches":24,"pct_0":58.0,"pct_1":55.2,"pct_2":66.7,"pct_3":100.0,"total_tries":162,"total_ok":94,"total_pct":58.0},{"name":"Ella Korpela","team":"Manse","team_full":"Manse PP, Tampere","matches":24,"pct_0":57.2,"pct_1":50.0,"pct_2":50.0,"pct_3":50.0,"total_tries":167,"total_ok":94,"total_pct":56.3},{"name":"Fanni Tuuri","team":"PöU","team_full":"Pöytyän Urheilijat","matches":24,"pct_0":61.5,"pct_1":100.0,"pct_2":66.7,"pct_3":50.0,"total_tries":148,"total_ok":93,"total_pct":62.8},{"name":"Jutta Myllyniemi","team":"JoMa","team_full":"Joensuun Maila","matches":21,"pct_0":38.5,"pct_1":67.9,"pct_2":71.7,"pct_3":60.0,"total_tries":139,"total_ok":92,"total_pct":66.2},{"name":"Johanna Pirskanen","team":"Pesäkarhut","team_full":"Pesäkarhut, Pori","matches":18,"pct_0":80.6,"pct_1":75.0,"pct_2":0.0,"pct_3":0.0,"total_tries":116,"total_ok":90,"total_pct":77.6},{"name":"Senja Kaarikivi","team":"Tahko","team_full":"Hyvinkaän Tahko","matches":22,"pct_0":64.5,"pct_1":61.5,"pct_2":80.0,"pct_3":77.8,"total_tries":137,"total_ok":90,"total_pct":65.7},{"name":"Ilona Hakoniemi","team":"Fera","team_full":"Fera, Rauma","matches":24,"pct_0":43.8,"pct_1":67.8,"pct_2":63.2,"pct_3":37.5,"total_tries":149,"total_ok":90,"total_pct":60.4},{"name":"Kiira Kautto","team":"Manse","team_full":"Manse PP, Tampere","matches":20,"pct_0":77.2,"pct_1":81.0,"pct_2":83.3,"pct_3":100.0,"total_tries":88,"total_ok":70,"total_pct":79.5},{"name":"Tiia-Mari Veikanmaa","team":"JoMa","team_full":"Joensuun Maila","matches":21,"pct_0":73.3,"pct_1":100.0,"pct_2":57.1,"pct_3":83.3,"total_tries":106,"total_ok":79,"total_pct":74.5},{"name":"Tanja Heikkilä","team":"Roihuttaret","team_full":"Roihuttaret, Helsinki","matches":23,"pct_0":57.9,"pct_1":100.0,"pct_2":100.0,"pct_3":100.0,"total_tries":141,"total_ok":88,"total_pct":62.4},{"name":"Silja Syrjälä","team":"Jussittaret","team_full":"Jussittaret, Seinäjoki","matches":21,"pct_0":61.5,"pct_1":65.0,"pct_2":63.0,"pct_3":62.8,"total_tries":130,"total_ok":82,"total_pct":63.1},{"name":"Charlotta Höglund","team":"Virkiä","team_full":"Lapuan Virkiä","matches":24,"pct_0":48.3,"pct_1":59.5,"pct_2":76.5,"pct_3":92.3,"total_tries":144,"total_ok":89,"total_pct":61.8},{"name":"Henna Juka","team":"Pesäkarhut","team_full":"Pesäkarhut, Pori","matches":22,"pct_0":48.6,"pct_1":69.4,"pct_2":50.0,"pct_3":78.6,"total_tries":133,"total_ok":84,"total_pct":63.2},{"name":"Sanja Kaarikivi","team":"Tahko","team_full":"Hyvinkaän Tahko","matches":22,"pct_0":64.5,"pct_1":61.5,"pct_2":80.0,"pct_3":77.8,"total_tries":137,"total_ok":90,"total_pct":65.7},{"name":"Emmi Särkioja","team":"Kirittäret","team_full":"Jyväskylän Kirittäret","matches":24,"pct_0":50.0,"pct_1":34.8,"pct_2":83.9,"pct_3":58.9,"total_tries":141,"total_ok":91,"total_pct":64.5},{"name":"Anni Kotimaa","team":"Jussittaret","team_full":"Jussittaret, Seinäjoki","matches":24,"pct_0":61.5,"pct_1":64.0,"pct_2":58.6,"pct_3":58.8,"total_tries":84,"total_ok":51,"total_pct":60.7},{"name":"Mari Rintala","team":"Tahko","team_full":"Hyvinkaän Tahko","matches":21,"pct_0":50.0,"pct_1":69.8,"pct_2":80.0,"pct_3":50.0,"total_tries":118,"total_ok":73,"total_pct":61.9}];
+
+// ---- TILASTOT ----
+let sortKey = 'total_pct', sortDir = -1, page = 0;
+const PAGE_SIZE = 20;
+const teams = [...new Set(DATA.map(r => r.team_full))].sort();
+
+teams.forEach(t => {
+  const o = document.createElement('option');
+  o.value = t; o.textContent = t;
+  document.getElementById('teamFilter').appendChild(o);
+});
+
+function filtered() {
+  const s = document.getElementById('search').value.toLowerCase();
+  const tf = document.getElementById('teamFilter').value;
+  const mt = parseInt(document.getElementById('minTries').value) || 0;
+  return DATA.filter(r =>
+    (!s || r.name.toLowerCase().includes(s)) &&
+    (!tf || r.team_full === tf) &&
+    r.total_tries >= mt
+  ).sort((a, b) => {
+    const av = typeof a[sortKey] === 'string' ? a[sortKey] : +a[sortKey];
+    const bv = typeof b[sortKey] === 'string' ? b[sortKey] : +b[sortKey];
+    return av < bv ? sortDir : -sortDir;
+  });
+}
+
+function render() {
+  const data = filtered();
+  page = 0;
+  renderMetrics(data);
+  renderTable(data);
+}
+
+function renderMetrics(data) {
+  const avg = data.length ? (data.reduce((s, r) => s + r.total_pct, 0) / data.length).toFixed(1) : '–';
+  const best = data.length ? data.reduce((a, b) => b.total_pct > a.total_pct ? b : a, data[0]) : null;
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Pelaajia</div><div class="metric-value">${data.length}</div></div>
+    <div class="metric"><div class="metric-label">Keskim. %</div><div class="metric-value">${avg}%</div></div>
+    <div class="metric"><div class="metric-label">Yrityksiä yht.</div><div class="metric-value">${data.reduce((s,r)=>s+r.total_tries,0).toLocaleString('fi')}</div></div>
+    <div class="metric"><div class="metric-label">Paras %</div><div class="metric-value">${best ? best.total_pct.toFixed(1)+'%' : '–'}</div><div class="metric-sub">${best ? best.name : ''}</div></div>
+  `;
+}
+
+function renderTable(data) {
+  const slice = data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const maxPct = Math.max(...data.map(r => r.total_pct), 1);
+  document.getElementById('tbody').innerHTML = slice.map((r, i) => {
+    const rank = page * PAGE_SIZE + i + 1;
+    const pct = r.total_pct;
+    const cls = pct >= 70 ? 'pct-high' : pct < 45 ? 'pct-low' : '';
+    const bw = Math.round(pct / maxPct * 100);
+    return `<tr>
+      <td class="rank">${rank}</td>
+      <td class="player-name">${r.name}</td>
+      <td><span class="team-tag">${r.team}</span></td>
+      <td>${r.matches}</td>
+      <td>${r.total_tries}</td>
+      <td>${r.total_ok}</td>
+      <td class="${cls}">${pct.toFixed(1)}%</td>
+      <td>${r.pct_0.toFixed(0)}%</td>
+      <td>${r.pct_1.toFixed(0)}%</td>
+      <td>${r.pct_2.toFixed(0)}%</td>
+      <td>${r.pct_3.toFixed(0)}%</td>
+      <td class="bar-cell"><span class="bar-wrap"><span class="bar-fill" style="width:${bw}%"></span></span></td>
+    </tr>`;
+  }).join('');
+  const total = data.length, pages = Math.ceil(total / PAGE_SIZE);
+  document.getElementById('pageInfo').textContent = `Sivu ${page + 1} / ${pages || 1}  (${total} pelaajaa)`;
+  document.getElementById('prevBtn').disabled = page === 0;
+  document.getElementById('nextBtn').disabled = (page + 1) >= pages;
+}
+
+function changePage(d) {
+  const data = filtered();
+  page = Math.max(0, Math.min(page + d, Math.ceil(data.length / PAGE_SIZE) - 1));
+  renderTable(data);
+}
+
+function sortBy(key) {
+  document.querySelectorAll('th[id]').forEach(th => th.className = '');
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+  const th = document.getElementById('th-' + key);
+  if (th) th.className = sortDir === -1 ? 'sort-desc' : 'sort-asc';
+  render();
+}
+
+// ---- SIMULAATTORI ----
+const PESÄT = ['Kotipesä (lähtö)', '1. pesä', '2. pesä', '3. pesä', 'Kotipesä (maali)'];
+const KEYS = ['pct_0', 'pct_1', 'pct_2', 'pct_3', 'pct_0'];
+const sel = [null, null, null, null, null];
+let simChart = null;
+
+function buildSlots() {
+  const opts = DATA.map((p, i) => `<option value="${i}">${p.name} (${p.team})</option>`).join('');
+  document.getElementById('pesa-slots').innerHTML = PESÄT.map((lbl, i) => `
+    <div class="pesa-row">
+      <span class="pesa-label">${lbl}</span>
+      <select onchange="selPlayer(${i},this.value)">
+        <option value="">– valitse –</option>${opts}
+      </select>
+      <span class="pct-badge pesa-pct" id="pp-${i}" style="color:var(--muted)">–</span>
+    </div>
+  `).join('');
+}
+
+function selPlayer(slot, val) {
+  sel[slot] = val === '' ? null : parseInt(val);
+  const el = document.getElementById('pp-' + slot);
+  if (sel[slot] === null) { el.textContent = '–'; el.style.color = 'var(--muted)'; }
+  else {
+    const p = DATA[sel[slot]], v = adjustedPct(p, KEYS[slot]);
+    el.textContent = (v * 100).toFixed(0) + '%';
+    el.style.color = v >= 0.65 ? 'var(--accent)' : v >= 0.45 ? 'var(--text)' : 'var(--accent2)';
+  }
+  calc();
+}
+
+function getCoeffs() {
+  return {
+    opp: parseFloat(document.getElementById('opp').value),
+    speed: parseFloat(document.getElementById('speed').value),
+    pressure: parseFloat(document.getElementById('pressure').value),
+    fatigue: parseFloat(document.getElementById('fatigue').value)
+  };
+}
+
+function adjustedPct(player, key) {
+  const c = getCoeffs();
+  let p = player[key] / 100;
+  p = p / c.opp;
+  p = p * (key === 'pct_0' || key === 'pct_3' ? c.speed : 1);
+  p = p * c.pressure * c.fatigue;
+  return Math.min(0.99, Math.max(0.01, p));
+}
+
+function updateSlider(id) {
+  document.getElementById(id + '-v').textContent = parseFloat(document.getElementById(id).value).toFixed(2) + '×';
+  sel.forEach((s, i) => { if (s !== null) selPlayer(i, s); });
+}
+
+function calc() {
+  const el = document.getElementById('calc-result');
+  if (sel.some(s => s === null)) { el.innerHTML = '<p class="note">Valitse pelaajat kaikille pesille.</p>'; return; }
+  const probs = sel.map((idx, i) => adjustedPct(DATA[idx], KEYS[i]));
+  const chain = probs.reduce((a, p) => a * p, 1);
+  const pct = (chain * 100).toFixed(1);
+  const grade = chain >= 0.25 ? 'Erinomainen' : chain >= 0.12 ? 'Hyvä' : chain >= 0.06 ? 'Kohtalainen' : 'Haastava';
+  const chainHtml = sel.map((idx, i) => {
+    const p = probs[i];
+    return `<span class="chain-node ${p >= 0.5 ? 'ok' : 'fail'}">${DATA[idx].name.split(' ').slice(-1)[0]}<br><small>${(p*100).toFixed(0)}%</small></span>${i < 4 ? '<span class="chain-arrow">→</span>' : ''}`;
+  }).join('');
+  el.innerHTML = `
+    <div class="chain">${chainHtml}</div>
+    <div class="result-box">
+      <div class="result-prob">${pct}%</div>
+      <div class="result-label">Juoksun todennäköisyys — ${grade}</div>
+      <div class="result-formula">${probs.map(p=>(p*100).toFixed(0)+'%').join(' × ')} = ${pct}%</div>
+    </div>
+  `;
+}
+
+function runSim() {
+  if (sel.some(s => s === null)) { document.getElementById('sim-out').innerHTML = '<p class="note" style="color:var(--accent2)">Valitse ensin kaikki pelaajat.</p>'; return; }
+  const probs = sel.map((idx, i) => adjustedPct(DATA[idx], KEYS[i]));
+  const N = 10000;
+  let success = 0;
+  const buckets = [0, 0, 0, 0, 0, 0];
+  for (let i = 0; i < N; i++) {
+    let steps = 0;
+    for (let s = 0; s < probs.length; s++) {
+      if (Math.random() < probs[s]) steps++;
+      else break;
+    }
+    buckets[steps]++;
+    if (steps === 5) success++;
+  }
+  const rate = (success / N * 100).toFixed(1);
+  const el = document.getElementById('sim-out');
+  el.innerHTML = `
+    <div class="sim-result-grid">
+      <div class="sim-metric"><div class="sim-metric-val">${success.toLocaleString('fi')}</div><div class="sim-metric-lbl">Juoksua / 10 000</div></div>
+      <div class="sim-metric"><div class="sim-metric-val">${rate}%</div><div class="sim-metric-lbl">Simuloitu todennäköisyys</div></div>
+    </div>
+    <div style="position:relative;height:200px"><canvas id="simChart" role="img" aria-label="Simulaation jakaumakaavio"></canvas></div>
+  `;
+  if (simChart) simChart.destroy();
+  simChart = new Chart(document.getElementById('simChart'), {
+    type: 'bar',
+    data: {
+      labels: ['0 pesää','1 pesä','2 pesää','3 pesää','4 pesää','Juoksu!'],
+      datasets: [{ data: buckets, backgroundColor: ['#c84b1f','#c8731f','#ba9a1f','#4a8a3f','#2d6a25','#1a4a15'], borderRadius: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('fi')} kertaa (${(ctx.parsed.y/N*100).toFixed(1)}%)` }}},
+      scales: { x: { grid: { display: false }}, y: { grid: { color: '#e0ddd5' }, ticks: { callback: v => v.toLocaleString('fi') }}}
+    }
+  });
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['tilastot','simulaattori'].forEach(id => document.getElementById(id).classList.toggle('hidden', id !== tab));
+}
+
+buildSlots();
+render();
+</script>
+</body>
+</html>
